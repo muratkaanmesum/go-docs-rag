@@ -1,0 +1,16 @@
+services:
+  db:
+    image: pgvector/pgvector:pg18-trixie
+    environment:
+      POSTGRES_DB: rag
+      POSTGRES_USER: rag
+      # Local-only database, bound to 127.0.0.1 below; no password to keep out of files.
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - pgdata:/var/lib/postgresql
+
+volumes:
+  pgdata:
