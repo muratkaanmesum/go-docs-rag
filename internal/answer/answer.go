@@ -58,17 +58,26 @@ func Ask(ctx context.Context, model, question string, excerpts []retrieve.Result
 
 var marker = regexp.MustCompile(`\[(\d+)\]`)
 
-// Sources lists the URLs of the excerpts the answer cites, in first-cited order.
-// Markers that point at no excerpt are dropped, so every printed link is real.
-func Sources(answer string, excerpts []retrieve.Result) []string {
-	var out []string
+// Cited returns the excerpt numbers the answer cites, in first-cited order.
+// Markers that point at no excerpt are dropped, so every cited number is real.
+func Cited(answer string, excerpts int) []int {
+	var out []int
 	seen := map[int]bool{}
 	for _, m := range marker.FindAllStringSubmatch(answer, -1) {
 		n, _ := strconv.Atoi(m[1])
-		if n < 1 || n > len(excerpts) || seen[n] {
+		if n < 1 || n > excerpts || seen[n] {
 			continue
 		}
 		seen[n] = true
+		out = append(out, n)
+	}
+	return out
+}
+
+// Sources lists "[n] URL" for every cited excerpt.
+func Sources(answer string, excerpts []retrieve.Result) []string {
+	var out []string
+	for _, n := range Cited(answer, len(excerpts)) {
 		out = append(out, fmt.Sprintf("[%d] %s", n, excerpts[n-1].URL))
 	}
 	return out

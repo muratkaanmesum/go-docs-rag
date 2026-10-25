@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask the Go docs</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <main class="talk">
+    <header class="masthead">
+      <h1>Ask the Go docs</h1>
+      <p>Answers come only from go.dev: the docs, the blog, the spec and the memory model. Each question is answered on its own, without memory of earlier ones.</p>
+    </header>
+
+    <section class="starters" id="starters" aria-label="Example questions">
+      <p>Try one of these</p>
+      <button type="button">How do I set up a Go workspace?</button>
+      <button type="button">Which Go version added log/slog?</button>
+      <button type="button">What does GOFLAGS=-modcacherw do?</button>
+      <button type="button">How do I configure a Kubernetes ingress?</button>
+    </section>
+
+    <ol class="log" id="log" aria-live="polite"></ol>
+
+    <form class="composer" id="composer">
+      <label for="q" class="visually-hidden">Your question</label>
+      <textarea id="q" rows="1" placeholder="Ask about Go…" autocomplete="off" required></textarea>
+      <button type="submit">Ask</button>
+    </form>
+  </main>
+
+  <aside class="reading" id="reading" aria-label="What the answer was built from">
+    <h2>What it read</h2>
+    <p class="reading-empty">Ask something. The five passages it retrieves will show up here, placed by how close they are to your question.</p>
+  </aside>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
