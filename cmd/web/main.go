@@ -4,6 +4,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/subtle"
 	"embed"
 	"encoding/json"
 	"flag"
@@ -48,7 +49,11 @@ type chunk struct {
 }
 
 func main() {
-	addr := flag.String("addr", "127.0.0.1:7070", "listen address; keep it on localhost")
+	defaultAddr := os.Getenv("ADDR")
+	if defaultAddr == "" {
+		defaultAddr = "127.0.0.1:7070"
+	}
+	addr := flag.String("addr", defaultAddr, "listen address; ADDR env overrides the localhost default")
 	model := flag.String("model", "claude-sonnet-5-5", "Claude model ID")
 	k := flag.Int("k", 5, "chunks to retrieve")
 	flag.Parse()
@@ -79,7 +84,23 @@ func main() {
 	mux.HandleFunc("POST /api/answer", s.handleAnswer)
 
 	log.Printf("open http://%s", *addr)
-	log.Fatal(http.ListenAndServe(*addr, mux))
+	log.Fatal(http.ListenAndServe(*addr, basicAuth(mux, os.Getenv("BASIC_AUTH_USER"), os.Getenv("BASIC_AUTH_PASS"))))
+}
+
+// basicAuth guards every route when user and pass are set; locally both are empty and it is a no-op.
+func basicAuth(next http.Handler, user, pass string) http.Handler {
+	if user == "" || pass == "" {
+		return next
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		u, p, ok := r.BasicAuth()
+		if !ok || subtle.ConstantTimeCompare([]byte(u), []byte(user)) != 1 || subtle.ConstantTimeCompare([]byte(p), []byte(pass)) != 1 {
+			w.Header().Set("WWW-Authenticate", `Basic realm="go-docs-rag"`)
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *server) retrieve(ctx context.Context, question string) ([]retrieve.Result, error) {
